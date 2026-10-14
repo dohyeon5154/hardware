@@ -107,7 +107,7 @@ p{margin:0 0 14px;color:#C3D2E2}
 .mono{font-family:var(--mono)}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 /* controls */
-.sw{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:5px;background:var(--ground);cursor:pointer;user-select:none;transition:.18s}
+.sw{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:5px;background:var(--ground);color:#fff;font-family:inherit;text-align:left;cursor:pointer;user-select:none;transition:.18s}
 .sw:hover{border-color:#33506e}
 .sw .box{width:16px;height:16px;border:2px solid var(--line);border-radius:3px;flex:none;position:relative;transition:.18s}
 .sw.on .box{background:var(--ok);border-color:var(--ok)}
@@ -170,6 +170,17 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--ground);border:1p
 pre{font-family:var(--mono);font-size:12px;line-height:1.7;background:var(--ground);border:1px solid var(--line);border-radius:5px;padding:14px;overflow:auto;color:#B9C9DA;white-space:pre-wrap;word-break:break-word}
 .blink{animation:bl 1s steps(2) infinite}
 @keyframes bl{50%{opacity:.25}}
+/* 4·5교시 인터랙션 */
+.lane{margin-bottom:14px}
+.lane .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:13px}
+.track{position:relative;height:24px;border:1px solid var(--line);border-radius:4px;background:var(--ground);overflow:hidden}
+.track .reach{position:absolute;left:0;top:0;bottom:0;background:rgba(46,211,217,.09);border-right:1px dashed rgba(46,211,217,.55);transition:width .3s}
+.track .beam{position:absolute;left:0;top:9px;height:4px}
+.track .beam.ok{background-image:linear-gradient(90deg,var(--ok) 50%,transparent 50%);background-size:14px 4px;animation:flow .5s linear infinite}
+.track .beam.warn{background-image:linear-gradient(90deg,var(--pow) 50%,transparent 50%);background-size:14px 4px;animation:flow .8s linear infinite}
+.track .beam.bad{background:var(--bad);opacity:.45}
+.track .rx{position:absolute;top:4px;width:14px;height:14px;margin-left:-7px;border-radius:3px;border:2px solid var(--paper);background:var(--panel)}
+@keyframes flow{to{background-position:14px 0}}
 </style>
 </head>
 <body>
@@ -432,120 +443,181 @@ pre{font-family:var(--mono);font-size:12px;line-height:1.7;background:var(--grou
 
 <!-- ============ PAGE 4 ============ -->
 <section class="page" data-t="4교시">
-  <p class="eyebrow sig">04 · 14:00–14:50 · 인지 · 연결 계층</p>
-  <h1>카메라와 통신 아키텍처</h1>
-  <p class="lead">네 번째 질문. <b>“데이터를 어디로 보내는가?”</b> 그리고 그전에 — 해상도는 높일수록 좋은 것이 아니다.</p>
+  <p class="eyebrow sig">04 · 14:00–14:50 · 연결 계층</p>
+  <h1>보드는 어떻게 서로 대화하는가</h1>
+  <p class="lead">네 번째 질문. <b>“데이터를 무엇으로 보내는가?”</b> 방식은 네 가지. 성능 순위가 아니라 <b>조건</b>으로 고른다.</p>
 
   <div class="lab">
-    <div class="lab-head"><span class="k">Interactive 09</span><h3>해상도를 올리면 무엇이 나빠지는가</h3></div>
+    <div class="lab-head"><span class="k">Interactive 09</span><h3>통신 방식 네 가지 — 눌러서 비교한다</h3></div>
+    <div class="lab-body">
+      <div class="chips" id="cmTabs" style="margin-bottom:16px"></div>
+      <div class="grid g2" style="align-items:start">
+        <div>
+          <div class="card tight" style="background:var(--ground)">
+            <svg viewBox="0 0 420 200" style="width:100%;height:auto" id="cmScene"></svg>
+          </div>
+          <div class="msg" id="cmDef"></div>
+        </div>
+        <div>
+          <div id="cmBars"></div>
+          <div class="grid g3" id="cmFacts" style="gap:8px;margin-top:4px"></div>
+        </div>
+      </div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="card tight"><span class="tag ok">장점</span><ul class="tick" id="cmPro" style="margin-top:12px"></ul></div>
+        <div class="card tight"><span class="tag bad">단점</span><ul class="tick" id="cmCon" style="margin-top:12px"></ul></div>
+      </div>
+      <div class="msg" id="cmUse"></div>
+    </div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head"><span class="k">Interactive 10</span><h3>조건을 바꾸면 무엇이 끊기는가</h3></div>
     <div class="lab-body">
       <div class="grid g2" style="align-items:start">
         <div>
-          <div class="rowlab"><span>카메라 해상도</span><b id="camRes">1280 × 720</b></div>
-          <input type="range" id="camSlider" min="0" max="4" step="1" value="2">
-          <p class="sub" style="margin-top:12px">잎의 병징(작은 반점)을 식별해야 합니다. 미리보기에서 반점이 보이는지 직접 확인하세요.</p>
-          <canvas id="camCanvas" width="420" height="240" style="width:100%;border:1px solid var(--line);border-radius:5px;background:#0B121C;image-rendering:pixelated"></canvas>
-          <div class="msg" id="camMsg"></div>
+          <div class="rowlab"><span>두 기기 사이 거리</span><b id="cqDistV">5 m</b></div>
+          <input type="range" id="cqDist" min="1" max="150" value="5">
+          <p class="sub" style="margin:16px 0 6px">보내는 것</p>
+          <div class="chips" id="cqData"></div>
+          <p class="sub" style="margin:16px 0 6px">대화 상대</p>
+          <div class="chips" id="cqPeer"></div>
+          <div class="grid" style="gap:7px;margin-top:16px" id="cqSw"></div>
         </div>
-        <div id="camBars"></div>
+        <div>
+          <div id="cqLanes"></div>
+          <div class="msg" id="cqMsg"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="lab">
-    <div class="lab-head"><span class="k">Interactive 10</span><h3>통신 방식 선택기 — 거리 × 데이터량 × 전력</h3></div>
+    <div class="lab-head"><span class="k">Interactive 11</span><h3>이 상황에는 무엇을 쓸까</h3></div>
     <div class="lab-body">
-      <div class="grid g2" style="align-items:start">
-        <div>
-          <div class="rowlab"><span>통신 거리</span><b id="cmDistV">30 m</b></div>
-          <input type="range" id="cmDist" min="1" max="500" value="30">
-          <div class="rowlab" style="margin-top:14px"><span>보낼 데이터량</span><b id="cmDataV">1 KB/s</b></div>
-          <input type="range" id="cmData" min="0" max="4" value="1">
-          <div class="rowlab" style="margin-top:14px"><span>전력 제약 (배터리)</span><b id="cmPwrV">보통</b></div>
-          <input type="range" id="cmPwr" min="0" max="2" value="1">
-          <div class="msg" id="cmMsg"></div>
+      <div class="card tight" style="background:var(--ground);margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div><span class="tag">상황 <span id="csIdx">1</span> / 4</span> <b style="margin-left:8px" id="csSit">–</b></div>
+          <div class="mono sub">정답 <span id="csScore">0</span> / 4</div>
         </div>
-        <div id="cmList" class="grid" style="gap:8px"></div>
       </div>
+      <div class="chips" id="csOpts"></div>
+      <div class="msg" id="csMsg">방식을 선택하세요.</div>
+      <div style="margin-top:14px"><button class="btn" id="csNext">다음 상황</button></div>
     </div>
   </div>
 
-  <div class="lab">
-    <div class="lab-head"><span class="k">Interactive 11</span><h3>데이터는 이렇게 흐른다</h3></div>
-    <div class="lab-body">
-      <p class="sub" style="margin-top:-4px">구간을 클릭하면 그 구간이 어떤 프로토콜을 쓰고 왜 그런지 표시됩니다.</p>
-      <div class="card tight" style="background:var(--ground);overflow-x:auto">
-        <svg viewBox="0 0 700 210" style="width:100%;min-width:520px;height:auto" id="flowSvg">
-          <g id="flowLinks"></g><g id="flowNodes"></g><g id="flowPkts"></g>
-        </svg>
-      </div>
-      <div class="msg" id="flowMsg">MQTT 토픽 규칙: <code>farm/{로봇ID}/{데이터종류}</code></div>
-    </div>
+  <div class="card" style="text-align:center">
+    <h3 style="margin:0">한 제품에 한 가지만 쓰지 않는다. <span style="color:var(--sig)">구간마다 맞는 방식을 섞어 쓴다.</span></h3>
   </div>
 </section>
 
 <!-- ============ PAGE 5 ============ -->
 <section class="page" data-t="5교시">
   <p class="eyebrow" style="color:var(--mech)">05 · 15:00–15:50 · 출력 계층</p>
-  <h1>액추에이터 · 드라이버 · 기구</h1>
-  <p class="lead">다섯 번째 질문. <b>“물리 세계를 어떻게 바꾸는가?”</b> 여기서 처음으로 큰 전류가 등장한다.</p>
+  <h1>판단을 동작으로 바꾼다</h1>
+  <p class="lead">다섯 번째 질문. <b>“AI의 판단은 어떻게 실제 동작이 되는가?”</b> 모터는 그중 한 부품일 뿐이다.</p>
 
   <div class="lab">
-    <div class="lab-head"><span class="k">Interactive 12</span><h3>GPIO에 모터를 직접 연결하면 어떻게 되는가</h3></div>
+    <div class="lab-head"><span class="k">Interactive 12</span><h3>판단이 동작이 되기까지</h3></div>
     <div class="lab-body">
-      <div class="chips" style="margin-bottom:18px">
-        <button class="chip sel" data-md="direct">GPIO → 모터 직결</button>
-        <button class="chip" data-md="driver">GPIO → 드라이버 → 모터</button>
+      <div class="card tight" style="background:var(--ground);overflow-x:auto">
+        <svg viewBox="0 0 700 236" style="width:100%;min-width:520px;height:auto" id="lpSvg"></svg>
       </div>
-      <div class="card tight" style="background:var(--ground)">
-        <svg viewBox="0 0 700 190" style="width:100%;height:auto" id="drvSvg"></svg>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" id="lpNext">▶ 다음 단계</button>
+        <button class="btn" id="lpReset">처음부터</button>
       </div>
-      <div class="grid g3" style="margin-top:16px">
-        <div class="stat"><div class="lb">GPIO 핀 최대 출력</div><span class="big small">40</span><span class="unit">mA</span></div>
-        <div class="stat"><div class="lb">모터 기동 전류</div><span class="big small" style="color:var(--bad)">1200</span><span class="unit">mA</span></div>
-        <div class="stat"><div class="lb">배율</div><span class="big small" style="color:var(--bad)">30×</span><span class="unit">초과</span></div>
-      </div>
-      <div class="msg" id="drvMsg"></div>
+      <div class="msg" id="lpMsg"></div>
     </div>
   </div>
 
   <div class="lab">
-    <div class="lab-head"><span class="k">Interactive 13</span><h3>모터 선정 — 전압이 아니라 토크로 고른다</h3></div>
+    <div class="lab-head"><span class="k">Interactive 13</span><h3>출력의 종류 — 동작은 모터만이 아니다</h3></div>
+    <div class="lab-body">
+      <p class="sub" style="margin-top:-4px">세상의 <b>무엇</b>을 바꾸려는가?</p>
+      <div class="chips" id="outTabs" style="margin-bottom:16px"></div>
+      <div class="grid g2" style="align-items:center">
+        <div class="card tight" style="background:var(--ground)">
+          <svg viewBox="0 0 300 170" style="width:100%;height:auto" id="outSvg"></svg>
+        </div>
+        <div>
+          <div class="stat"><div class="lb">부품</div><div id="outParts" style="font-size:17px;font-weight:700"></div></div>
+          <div class="stat" style="margin-top:10px"><div class="lb">쓰는 곳</div><div id="outUse"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head"><span class="k">Interactive 14</span><h3>핸들 없이 방향을 바꾼다 — 차동 구동</h3></div>
     <div class="lab-body">
       <div class="grid g2" style="align-items:start">
         <div>
-          <div class="rowlab"><span>로봇 총중량</span><b id="tqWv">1.5 kg</b></div>
-          <input type="range" id="tqW" min="5" max="50" value="15">
-          <div class="rowlab" style="margin-top:14px"><span>바퀴 지름</span><b id="tqDv">68 mm</b></div>
-          <input type="range" id="tqD" min="40" max="130" value="68">
-          <div class="rowlab" style="margin-top:14px"><span>노면 · 경사 계수</span><b id="tqKv">1.5</b></div>
-          <input type="range" id="tqK" min="10" max="20" value="15">
-          <div class="rowlab" style="margin-top:14px"><span>구동 바퀴 수</span><b id="tqNv">2</b></div>
-          <input type="range" id="tqN" min="2" max="4" step="2" value="2">
+          <div class="rowlab"><span>왼쪽 바퀴</span><b id="ddLv">60</b></div>
+          <input type="range" id="ddL" min="-100" max="100" step="10" value="60">
+          <div class="rowlab" style="margin-top:14px"><span>오른쪽 바퀴</span><b id="ddRv">60</b></div>
+          <input type="range" id="ddR" min="-100" max="100" step="10" value="60">
+          <div class="chips" id="ddPre" style="margin-top:16px"></div>
           <div class="stat" style="margin-top:16px">
-            <div class="lb">바퀴 1개당 필요 토크 (여유 1.5배 포함)</div>
-            <span class="big" id="tqOut">0.0</span><span class="unit">kg·cm</span>
+            <div class="lb">로봇의 움직임</div>
+            <span class="big small" id="ddOut">직진</span>
           </div>
         </div>
-        <div id="tqMotors" class="grid" style="gap:10px"></div>
+        <canvas id="ddCanvas" width="560" height="320" style="width:100%;border:1px solid var(--line);border-radius:5px;background:#0B121C"></canvas>
       </div>
-      <div class="msg">감속 기어를 넣으면 <b>속도는 줄고 토크는 커진다.</b> 같은 모터로 힘을 만드는 방법이다.</div>
+      <div class="msg">좌우 바퀴의 <b>속도 차이</b>가 곧 방향이다.</div>
     </div>
   </div>
 
   <div class="lab">
-    <div class="lab-head"><span class="k">Interactive 14</span><h3>어떤 액추에이터를 쓸 것인가</h3></div>
+    <div class="lab-head"><span class="k">Interactive 15</span><h3>피드백 — 명령한 것과 실제로 일어난 것은 다르다</h3></div>
     <div class="lab-body">
-      <p class="sub" style="margin-top:-4px">질문 두 개면 결정된다.</p>
-      <div id="actTree"></div>
-      <div class="msg" id="actMsg">첫 번째 질문을 선택하세요.</div>
+      <p class="sub" style="margin-top:-4px">두 로봇에게 같은 명령을 내립니다. <b>“100 cm 직진.”</b> 여러 번 출발시켜 보세요.</p>
+      <div class="card tight" style="background:var(--ground);overflow-x:auto">
+        <svg viewBox="0 0 700 200" style="width:100%;min-width:520px;height:auto" id="fbSvg"></svg>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn primary" id="fbGo">▶ 출발</button>
+        <span class="mono sub" id="fbCond"></span>
+      </div>
+      <div class="msg" id="fbMsg">바닥 · 배터리 · 무게는 출발할 때마다 조금씩 달라집니다.</div>
+      <div class="grid g3" style="margin-top:14px">
+        <div class="stat"><div class="lb">엔코더</div>바퀴가 얼마나 돌았나</div>
+        <div class="stat"><div class="lb">거리 센서</div>앞이 얼마나 가까운가</div>
+        <div class="stat"><div class="lb">자세 센서</div>얼마나 기울고 돌았나</div>
+      </div>
     </div>
   </div>
 
-  <div class="grid g3">
-    <div class="card tight"><div class="tag mech">토크</div><p class="note" style="margin-top:10px">돌리는 힘(kg·cm). 무겁고 바퀴가 클수록 더 필요하다.</p></div>
-    <div class="card tight"><div class="tag mech">무게중심</div><p class="note" style="margin-top:10px">배터리는 낮고 가운데로. 위에 얹으면 회전할 때 넘어진다.</p></div>
-    <div class="card tight"><div class="tag mech">진동</div><p class="note" style="margin-top:10px">모터 진동 → 카메라 흔들림 → AI 인식률 하락. 기구가 곧 성능이다.</p></div>
+  <div class="lab">
+    <div class="lab-head"><span class="k">Interactive 16</span><h3>동작의 순서 — 상태로 나눠서 생각한다</h3></div>
+    <div class="lab-body">
+      <p class="sub" style="margin-top:-4px">로봇 청소기입니다. <b>조건</b>을 눌러 다음 상태로 넘겨보세요.</p>
+      <div class="card tight" style="background:var(--ground);overflow-x:auto">
+        <svg viewBox="0 0 700 220" style="width:100%;min-width:560px;height:auto" id="smSvg"></svg>
+      </div>
+      <div class="grid g2" style="margin-top:14px;align-items:start">
+        <div>
+          <p class="sub" style="margin:0 0 6px">조건 발생</p>
+          <div class="chips" id="smEv"></div>
+        </div>
+        <div class="stat">
+          <div class="lb">지금 켜진 출력</div>
+          <div class="chips" id="smOut"></div>
+        </div>
+      </div>
+      <div class="msg" id="smMsg"></div>
+    </div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head"><span class="k">Interactive 17</span><h3>안전 — 움직이는 것은 다친다</h3></div>
+    <div class="lab-body">
+      <p class="sub" style="margin-top:-4px">대책을 켜고 끄면서 같은 사고가 어떻게 끝나는지 확인하세요.</p>
+      <div class="grid g2" id="sfList"></div>
+      <div class="msg" id="sfMsg"></div>
+    </div>
   </div>
 </section>
 
@@ -556,13 +628,13 @@ pre{font-family:var(--mono);font-size:12px;line-height:1.7;background:var(--grou
   <p class="lead">마지막 질문. <b>“전체가 하나로 동작하는가?”</b> 그리고 안 될 때, 소프트웨어 문제인지 하드웨어 문제인지 구분할 수 있는가.</p>
 
   <div class="lab">
-    <div class="lab-head"><span class="k">Interactive 15</span><h3>고장 진단 — 이 증상은 몇 번 단계에서 잡히는가</h3></div>
+    <div class="lab-head"><span class="k">Interactive 18</span><h3>고장 진단 — 이 증상은 몇 번 단계에서 잡히는가</h3></div>
     <div class="lab-body">
       <p class="sub" style="margin-top:-4px">디버깅은 감이 아니라 순서다. 증상을 읽고, 원인이 걸리는 단계를 고르세요.</p>
       <div class="card tight" style="background:var(--ground);margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-          <div><span class="tag">증상 <span id="dbIdx">1</span> / 5</span> <b style="margin-left:8px" id="dbSym">–</b></div>
-          <div class="mono sub">정답 <span id="dbScore">0</span> / 5</div>
+          <div><span class="tag">증상 <span id="dbIdx">1</span> / 7</span> <b style="margin-left:8px" id="dbSym">–</b></div>
+          <div class="mono sub">정답 <span id="dbScore">0</span> / 7</div>
         </div>
       </div>
       <div class="chips" id="dbSteps"></div>
@@ -572,7 +644,7 @@ pre{font-family:var(--mono);font-size:12px;line-height:1.7;background:var(--grou
   </div>
 
   <div class="lab">
-    <div class="lab-head"><span class="k">Interactive 16</span><h3>프롬프트 빌더 — 하드웨어 지식이 곧 프롬프트 품질이다</h3></div>
+    <div class="lab-head"><span class="k">Interactive 19</span><h3>프롬프트 빌더 — 하드웨어 지식이 곧 프롬프트 품질이다</h3></div>
     <div class="lab-body">
       <p class="sub" style="margin-top:-4px">요소를 켤 때마다 AI에게 줄 지시문이 어떻게 달라지는지 확인하세요.</p>
       <div class="grid g2" style="align-items:start">
@@ -599,6 +671,7 @@ pre{font-family:var(--mono);font-size:12px;line-height:1.7;background:var(--grou
       <tr><td>모터를 켜면 보드가 꺼진다</td><td><span class="tag pow">HW · 전원</span></td><td>전류 용량 부족</td></tr>
       <tr><td>값은 오는데 숫자가 이상하다</td><td><span class="tag sig">SW</span></td><td>단위 · 스케일 · 미보정</td></tr>
       <tr><td>시간이 지날수록 나빠진다</td><td><span class="tag pow">HW</span></td><td>발열 · 배터리 전압 하강</td></tr>
+      <tr><td>명령과 다르게 움직인다 (휜다 · 덜 간다)</td><td><span class="tag pow">HW · 피드백</span></td><td>결과를 재지 않는 오픈 루프</td></tr>
     </tbody></table>
     <p class="note" style="margin-top:14px">AI가 짜준 코드를 고치기 전에, <b>전원과 GND</b>부터 확인한다.</p>
   </div>
@@ -611,7 +684,7 @@ pre{font-family:var(--mono);font-size:12px;line-height:1.7;background:var(--grou
   <p class="lead">여섯 교시의 결정이 하나의 블록 다이어그램으로 모인다. <b>노드를 클릭</b>하면 그 부품을 왜 골랐는지 확인할 수 있다.</p>
 
   <div class="lab">
-    <div class="lab-head"><span class="k">Interactive 17</span><h3>블록 다이어그램</h3></div>
+    <div class="lab-head"><span class="k">Interactive 20</span><h3>블록 다이어그램</h3></div>
     <div class="lab-body">
       <div class="chips" style="margin-bottom:16px">
         <button class="chip sel" id="fPow">전원 배선 보기</button>
@@ -652,11 +725,35 @@ pre{font-family:var(--mono);font-size:12px;line-height:1.7;background:var(--grou
   </div>
 
   <div class="grid g2" style="margin-top:16px">
+    <div class="card">
+      <h3>통신 구간표</h3>
+      <table style="margin-top:8px"><thead><tr><th>구간</th><th>방식</th><th>고른 이유</th></tr></thead><tbody>
+        <tr><td>센서 → ESP32</td><td>선 (GPIO · I2C)</td><td>같은 기기 안, 가깝다</td></tr>
+        <tr><td>카메라 → Pi</td><td>선 (CSI)</td><td>영상은 데이터가 크다</td></tr>
+        <tr><td>ESP32 ↔ Pi</td><td>Wi-Fi</td><td>Pi는 ESP-NOW 불가</td></tr>
+        <tr><td>Pi → 대시보드</td><td>Wi-Fi</td><td>사진 전송 · 인터넷 필요</td></tr>
+        <tr class="dim"><td>이더넷</td><td>사용 안 함</td><td>움직이는 로봇</td></tr>
+      </tbody></table>
+    </div>
+    <div class="card">
+      <h3>동작 상태표</h3>
+      <table style="margin-top:8px"><thead><tr><th>상태</th><th>켜지는 출력</th><th>끝나는 조건</th></tr></thead><tbody>
+        <tr><td>순찰 주행</td><td>바퀴 모터</td><td>화분 앞 도착</td></tr>
+        <tr><td>정지</td><td>없음</td><td>흔들림이 멈춤</td></tr>
+        <tr><td>촬영 · 판단</td><td>서보 · 카메라</td><td>AI 결과 수신</td></tr>
+        <tr><td>급수</td><td>펌프</td><td>정해진 시간 경과</td></tr>
+        <tr><td>비상 정지</td><td>없음</td><td>장애물이 사라짐</td></tr>
+      </tbody></table>
+      <p class="note">어느 상태에서든 20cm 이내에 장애물이 감지되면 비상 정지로 간다.</p>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:16px">
     <div class="card"><h3>테스트 계획</h3>
       <div class="kv"><span class="k">T1 전원</span><span>무부하 5V/12V 실측 오차 ±5% 이내</span></div>
       <div class="kv"><span class="k">T2 센서</span><span>5분간 결측 0회, 값 변화 반응 확인</span></div>
-      <div class="kv"><span class="k">T3 통신</span><span>30분간 MQTT 유실 1% 미만, 재연결 성공</span></div>
-      <div class="kv"><span class="k">T4 구동</span><span>모터 기동 시 MCU 리셋 0회</span></div>
+      <div class="kv"><span class="k">T3 통신</span><span>30분간 Wi-Fi 데이터 유실 1% 미만, 끊긴 뒤 재연결 성공</span></div>
+      <div class="kv"><span class="k">T4 구동</span><span>모터 기동 시 MCU 리셋 0회, 명령이 끊기면 2초 안에 정지</span></div>
       <div class="kv"><span class="k">T5 카메라</span><span>주행 중 촬영 이미지 블러 판정 통과</span></div>
       <div class="kv"><span class="k">T6 통합</span><span>순찰→진단→급수 시나리오 3회 무중단</span></div>
     </div>
@@ -667,6 +764,7 @@ pre{font-family:var(--mono);font-size:12px;line-height:1.7;background:var(--grou
       <div class="kv"><span class="k">인식률 저하</span><span>RGB/BGR 확인 · 노출 고정 · 정지 후 촬영</span></div>
       <div class="kv"><span class="k">조기 방전</span><span>순찰 주기 운용 · 슬립 모드</span></div>
       <div class="kv"><span class="k">전복</span><span>배터리 하단 배치 · 회전 속도 제한</span></div>
+      <div class="kv"><span class="k">폭주</span><span>비상 정지 스위치 · 명령이 끊기면 정지</span></div>
     </div>
   </div>
 
@@ -694,7 +792,7 @@ const SVGNS="http://www.w3.org/2000/svg";
 function el(tag,attrs,txt){const n=document.createElementNS(SVGNS,tag);for(const k in attrs)n.setAttribute(k,attrs[k]);if(txt!=null)n.textContent=txt;return n;}
 
 /* ================= 페이지 네비게이션 ================= */
-const pages=$$(".page"), labels=["개요","1교시 전기·전원","2교시 MCU·GPIO","3교시 센서·인터페이스","4교시 카메라·통신","5교시 구동·기구","6교시 통합·디버깅","최종 설계서"];
+const pages=$$(".page"), labels=["개요","1교시 전기·전원","2교시 MCU·GPIO","3교시 센서·인터페이스","4교시 통신 방식","5교시 동작 구현","6교시 통합·디버깅","최종 설계서"];
 const shortLab=["개요","01 전원","02 두뇌","03 감각","04 연결","05 구동","06 통합","최종"];
 let cur=0, maxSeen=0;
 const bus=$("#bus");
@@ -1045,223 +1143,437 @@ function drawBus(){
 }
 drawBus();
 
-/* ================= 4. 카메라 ================= */
-const RES=[
-  {w:320,h:240,l:"320 × 240",inf:12,data:15,pw:12,cost:20,see:0},
-  {w:640,h:480,l:"640 × 480",inf:25,data:35,pw:25,cost:30,see:1},
-  {w:1280,h:720,l:"1280 × 720",inf:48,data:60,pw:45,cost:50,see:2},
-  {w:1920,h:1080,l:"1920 × 1080",inf:75,data:82,pw:70,cost:75,see:3},
-  {w:3840,h:2160,l:"3840 × 2160",inf:100,data:100,pw:100,cost:100,see:3}
-];
-const CAMMETRIC=[{k:"추론 지연",f:v=>Math.round(8+v.inf*1.6)+" ms"},{k:"프레임 데이터량",f:v=>Math.round(v.data*11)+" KB"},{k:"소비 전력",f:v=>(0.15+v.pw*0.011).toFixed(2)+" W"},{k:"모듈 비용",f:v=>Math.round(6+v.cost*.9)+"천원"}];
-function drawCam(idx){
-  const R=RES[idx], c=$("#camCanvas"), ctx=c.getContext("2d");
-  const off=document.createElement("canvas");
-  const scale=Math.max(6,Math.round(3400/R.w));
-  off.width=Math.round(c.width/scale); off.height=Math.round(c.height/scale);
-  const o=off.getContext("2d");
-  o.fillStyle="#0B121C"; o.fillRect(0,0,off.width,off.height);
-  const W=off.width,H=off.height;
-  o.fillStyle="#1E6B48";
-  o.beginPath();
-  o.ellipse(W*0.5,H*0.5,W*0.34,H*0.36,0.3,0,Math.PI*2); o.fill();
-  o.strokeStyle="#2E8F62"; o.lineWidth=Math.max(1,W*0.006);
-  o.beginPath(); o.moveTo(W*0.24,H*0.72); o.lineTo(W*0.76,H*0.28); o.stroke();
-  o.fillStyle="#8A5A1E";
-  [[0.42,0.44,0.045],[0.58,0.56,0.035],[0.5,0.62,0.028],[0.62,0.4,0.022]].forEach(s=>{
-    o.beginPath(); o.ellipse(W*s[0],H*s[1],W*s[2],W*s[2]*0.85,0,0,Math.PI*2); o.fill();
-  });
-  ctx.imageSmoothingEnabled=false;
-  ctx.clearRect(0,0,c.width,c.height);
-  ctx.drawImage(off,0,0,off.width,off.height,0,0,c.width,c.height);
-  $("#camRes").textContent=R.l;
-  $("#camBars").innerHTML=CAMMETRIC.map((m,i)=>{
-    const key=["inf","data","pw","cost"][i], val=R[key];
-    return '<div style="margin-bottom:16px"><div class="rowlab"><span>'+m.k+'</span><b>'+m.f(R)+'</b></div><div class="bar'+(val>80?" warnlvl":"")+'"><i style="width:'+val+'%"></i></div></div>';
-  }).join("")+'<div class="card tight" style="margin-top:6px"><div class="lb mono" style="font-size:10px;letter-spacing:.13em;color:var(--muted)">판정</div><div id="camVerdict" style="margin-top:8px;font-size:14px"></div></div>';
-  const v=$("#camVerdict"), m=$("#camMsg");
-  if(R.see<2){v.innerHTML='<span class="tag bad">반점 식별 불가</span>'; m.className="msg bad"; m.innerHTML="<b>병징을 볼 수 없다.</b> 데이터가 가벼워도 목적을 못 이루면 의미가 없다.";}
-  else if(idx===2){v.innerHTML='<span class="tag ok">반점 식별 가능 · 균형점</span>'; m.className="msg ok"; m.innerHTML="<b>여기가 이 제품의 선택지다.</b> 반점이 보이는 최소 해상도 + 감당 가능한 지연·전력·비용.";}
-  else{v.innerHTML='<span class="tag pow">식별은 되지만 과잉</span>'; m.className="msg warn"; m.innerHTML="<b>더 잘 보이지만 대가가 크다.</b> 대부분의 모델은 어차피 입력을 640 이하로 줄인다. 추론 지연·전력·발열만 늘어난다.";}
-}
-$("#camSlider").addEventListener("input",e=>drawCam(+e.target.value));
-drawCam(2);
-
-/* ================= 4. 통신 선택기 ================= */
-const PROTOS=[
-  {n:"Wi-Fi",maxD:60,maxData:4,pw:2,d:"영상·대용량, 인터넷 연결이 필요할 때. 전력 소모가 크다."},
-  {n:"BLE",maxD:15,maxData:1,pw:0,d:"배터리로 몇 달 버텨야 하는 소형 센서, 스마트폰 연동."},
-  {n:"ESP-NOW",maxD:120,maxData:2,pw:1,d:"공유기 없이 MCU끼리 직접. 넓은 온실·야외 센서망에 강하다."},
-  {n:"Ethernet",maxD:500,maxData:4,pw:2,d:"공장처럼 무선 간섭이 심하고 고정 설치가 가능한 곳."}
-];
-const DATAL=["100 B/s","1 KB/s","50 KB/s","500 KB/s","5 MB/s(영상)"];
-const PWRL=["매우 빠듯함","보통","여유 있음"];
-function calcComm(){
-  const d=+$("#cmDist").value, dl=+$("#cmData").value, pw=+$("#cmPwr").value;
-  $("#cmDistV").textContent=d+" m"; $("#cmDataV").textContent=DATAL[dl]; $("#cmPwrV").textContent=PWRL[pw];
-  let best=null;
-  const rows=PROTOS.map(p=>{
-    let score=100, why=[];
-    if(d>p.maxD){score-=60;why.push("거리 부족");}
-    if(dl>p.maxData){score-=60;why.push("대역폭 부족");}
-    if(p.pw>pw){score-=35;why.push("전력 부담");}
-    return {p,score,why};
-  });
-  rows.sort((a,b)=>b.score-a.score); best=rows[0];
-  $("#cmList").innerHTML=rows.map(r=>{
-    const ok=r.score>=90, mid=r.score>=60&&r.score<90;
-    const col=ok?"var(--ok)":(mid?"var(--pow)":"var(--bad)");
-    return '<div class="card tight" style="border-color:'+(ok?"rgba(75,217,138,.5)":"var(--line)")+'"><div style="display:flex;justify-content:space-between;align-items:center"><b>'+r.p.n+'</b><span class="tag" style="color:'+col+';border-color:'+col+'">'+(ok?"적합":(mid?"조건부":"부적합"))+'</span></div><p class="note" style="margin:8px 0 0">'+(r.why.length?"⚠ "+r.why.join(" · ")+" — ":"")+r.p.d+'</p></div>';
-  }).join("");
-  const m=$("#cmMsg");
-  if(best.score>=90){m.className="msg ok";m.innerHTML="<b>이 조건에서는 "+best.p.n+".</b> 통신 방식은 성능 순위가 아니라 <b>거리 × 데이터량 × 전력</b> 세 축의 교집합으로 결정된다.";}
-  else{m.className="msg warn";m.innerHTML="<b>모든 방식이 이 조건을 완전히 만족하지 못한다.</b> 데이터를 줄이거나(요약 후 전송), 중계 노드를 두거나, 전력 예산을 다시 짜야 한다.";}
-}
-["cmDist","cmData","cmPwr"].forEach(id=>$("#"+id).addEventListener("input",calcComm));
-calcComm();
-
-/* ================= 4. 데이터 흐름 ================= */
-const FN=[
-  {id:"sen",x:20,y:80,w:96,h:44,t:"센서 5종",s:"온습도·조도·토양·거리·자세"},
-  {id:"esp",x:170,y:80,w:104,h:44,t:"ESP32-S3",s:"수집 · 실시간 제어"},
-  {id:"pi",x:340,y:80,w:110,h:44,t:"Raspberry Pi 5",s:"AI 추론 · MQTT 브로커"},
-  {id:"cam",x:340,y:10,w:110,h:38,t:"CSI 카메라",s:"1280×720 · 15FPS"},
-  {id:"web",x:530,y:30,w:110,h:40,t:"웹 대시보드",s:"실시간 모니터링"},
-  {id:"cld",x:530,y:130,w:110,h:40,t:"클라우드",s:"일간 리포트 저장"}
-];
-const FL=[
-  {a:"sen",b:"esp",p:"GPIO · ADC · I2C",col:"var(--sig)",d:"근거리 저속. 센서가 많으면 I2C로 두 가닥에 몰아 붙인다."},
-  {a:"esp",b:"pi",p:"Wi-Fi · MQTT",col:"var(--sig)",d:"발행/구독 구조. 로봇이 10대로 늘어도 코드는 그대로, 토픽만 늘어난다."},
-  {a:"cam",b:"pi",p:"CSI",col:"var(--sig)",d:"영상은 데이터량이 압도적이라 전용 대역이 필요하다. USB보다 지연과 CPU 부담이 적다."},
-  {a:"pi",b:"web",p:"WebSocket",col:"var(--sig)",d:"양방향 상시 연결. 새로고침 없이 값이 바뀐다."},
-  {a:"pi",b:"cld",p:"HTTPS",col:"var(--sig)",d:"하루 1회 요약과 이상 이미지만 올린다. 전량 전송은 회선과 비용을 잡아먹는다."}
-];
-function node(id){return FN.find(n=>n.id===id);}
-(function drawFlow(){
-  const L=$("#flowLinks"),N=$("#flowNodes");
-  FL.forEach((f,i)=>{
-    const a=node(f.a),b=node(f.b);
-    const x1=a.x+a.w,y1=a.y+a.h/2,x2=b.x,y2=b.y+b.h/2;
-    const path=el("path",{d:"M"+x1+" "+y1+" C"+(x1+40)+" "+y1+","+(x2-40)+" "+y2+","+x2+" "+y2,fill:"none",stroke:"#2ED3D9","stroke-width":2,opacity:.55,"stroke-linecap":"round"});
-    path.style.cursor="pointer"; path.dataset.i=i; L.appendChild(path);
-    const mx=(x1+x2)/2,my=(y1+y2)/2-8;
-    const t=el("text",{x:mx,y:my,"font-family":"JetBrains Mono","font-size":"9",fill:"#7D93AC","text-anchor":"middle"},f.p);
-    t.style.cursor="pointer"; t.dataset.i=i; L.appendChild(t);
-    const dot=el("circle",{r:4,fill:"#2ED3D9"});
-    const anim=el("animateMotion",{dur:(2.2+i*0.3)+"s",repeatCount:"indefinite",path:"M"+x1+" "+y1+" C"+(x1+40)+" "+y1+","+(x2-40)+" "+y2+","+x2+" "+y2});
-    dot.appendChild(anim); $("#flowPkts").appendChild(dot);
-  });
-  FN.forEach(n=>{
-    const g=el("g",{}); g.style.cursor="default";
-    g.appendChild(el("rect",{x:n.x,y:n.y,width:n.w,height:n.h,rx:5,fill:"#16222F",stroke:"#22344A"}));
-    g.appendChild(el("text",{x:n.x+n.w/2,y:n.y+n.h/2-2,"font-family":"Pretendard","font-size":"11",fill:"#E7EEF6","text-anchor":"middle","font-weight":"700"},n.t));
-    g.appendChild(el("text",{x:n.x+n.w/2,y:n.y+n.h/2+13,"font-family":"JetBrains Mono","font-size":"7.5",fill:"#7D93AC","text-anchor":"middle"},n.s));
-    N.appendChild(g);
-  });
-  $("#flowSvg").addEventListener("click",e=>{
-    const i=e.target.dataset&&e.target.dataset.i;
-    if(i==null)return;
-    const f=FL[+i], m=$("#flowMsg"); m.className="msg ok";
-    m.innerHTML="<b>"+node(f.a).t+" → "+node(f.b).t+" · "+f.p+"</b><br>"+f.d;
-  });
+/* ================= 공통 · 프레임 루프와 SVG 도우미 ================= */
+const FRAMES=[];
+function onFrame(page,fn){FRAMES.push([page,fn]);}
+(function(){
+  let last=performance.now();
+  function tick(t){
+    const dt=Math.min(.05,(t-last)/1000); last=t;
+    FRAMES.forEach(f=>{if(f[0]===cur)f[1](dt,t/1000);});
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 })();
-
-/* ================= 5. 드라이버 ================= */
-function drawDrv(mode){
-  const s=$("#drvSvg"); s.innerHTML="";
-  const box=(x,y,w,h,t,sub,col)=>{
-    s.appendChild(el("rect",{x,y,width:w,height:h,rx:5,fill:"#16222F",stroke:col||"#22344A"}));
-    s.appendChild(el("text",{x:x+w/2,y:y+h/2-1,"font-family":"Pretendard","font-size":"12","font-weight":"700",fill:"#E7EEF6","text-anchor":"middle"},t));
-    if(sub)s.appendChild(el("text",{x:x+w/2,y:y+h/2+15,"font-family":"JetBrains Mono","font-size":"8",fill:"#7D93AC","text-anchor":"middle"},sub));
-  };
-  if(mode==="direct"){
-    box(40,70,120,56,"ESP32-S3","GPIO 최대 40mA");
-    box(430,70,120,56,"DC 모터","기동 1200mA","#FF5F56");
-    const p=el("line",{x1:160,y1:98,x2:430,y2:98,stroke:"#FF5F56","stroke-width":6,"stroke-linecap":"round"});
-    p.setAttribute("class","blink"); s.appendChild(p);
-    s.appendChild(el("text",{x:295,y:84,"font-family":"JetBrains Mono","font-size":"10",fill:"#FF5F56","text-anchor":"middle"},"1200 mA 요구"));
-    s.appendChild(el("text",{x:295,y:124,"font-family":"JetBrains Mono","font-size":"10",fill:"#FF5F56","text-anchor":"middle"},"40 mA 만 공급 가능"));
-    s.appendChild(el("text",{x:295,y:36,"font-family":"Pretendard","font-size":"14","font-weight":"700",fill:"#FF5F56","text-anchor":"middle"},"핀 손상 · 전압 강하 · 모터는 돌지 않음"));
-    s.appendChild(el("text",{x:295,y:170,"font-family":"JetBrains Mono","font-size":"9",fill:"#7D93AC","text-anchor":"middle"},"게다가 모터가 멈출 때 역기전력이 MCU로 되돌아온다"));
-    $("#drvMsg").className="msg bad";
-    $("#drvMsg").innerHTML="<b>GPIO는 신호를 만드는 핀이지, 힘을 내보내는 핀이 아니다.</b> 30배 넘는 전류를 요구받으면 핀이 손상되거나 보드가 리셋된다.";
-  }else{
-    box(20,70,110,56,"ESP32-S3","신호 5mA");
-    box(250,60,130,76,"TB6612FNG","모터 드라이버","#4BD98A");
-    box(480,70,110,56,"DC 모터","1200mA OK","#4BD98A");
-    box(250,10,130,32,"12V 배터리","","#F0A31E");
-    const sig=el("line",{x1:130,y1:98,x2:250,y2:98,stroke:"#2ED3D9","stroke-width":2.5,"stroke-linecap":"round"});s.appendChild(sig);
-    s.appendChild(el("text",{x:190,y:88,"font-family":"JetBrains Mono","font-size":"9",fill:"#2ED3D9","text-anchor":"middle"},"PWM · 방향"));
-    s.appendChild(el("line",{x1:315,y1:42,x2:315,y2:60,stroke:"#F0A31E","stroke-width":5,"stroke-linecap":"round"}));
-    const pw=el("line",{x1:380,y1:98,x2:480,y2:98,stroke:"#F0A31E","stroke-width":6,"stroke-linecap":"round"});s.appendChild(pw);
-    s.appendChild(el("text",{x:430,y:88,"font-family":"JetBrains Mono","font-size":"9",fill:"#F0A31E","text-anchor":"middle"},"12V · 1.2A"));
-    s.appendChild(el("line",{x1:75,y1:150,x2:545,y2:150,stroke:"#7D93AC","stroke-width":1.5,"stroke-dasharray":"5 4"}));
-    s.appendChild(el("text",{x:310,y:166,"font-family":"JetBrains Mono","font-size":"9",fill:"#7D93AC","text-anchor":"middle"},"공통 GND — 신호가 의미를 가지려면 기준선이 같아야 한다"));
-    [75,315,535].forEach(x=>s.appendChild(el("line",{x1:x,y1:126,x2:x,y2:150,stroke:"#7D93AC","stroke-width":1.5,"stroke-dasharray":"5 4"})));
-    $("#drvMsg").className="msg ok";
-    $("#drvMsg").innerHTML="<b>MCU는 지시만 하고, 힘은 드라이버가 쓴다.</b> 제어 신호(수 mA)와 구동 전력(수 A)이 분리되면서 MCU는 안전해지고 모터는 제 힘을 낸다.";
+function svgBox(s,x,y,w,h,t,sub,col){
+  s.appendChild(el("rect",{x,y,width:w,height:h,rx:5,fill:"#16222F",stroke:col||"#22344A"}));
+  s.appendChild(el("text",{x:x+w/2,y:y+h/2+(sub?-1:4),"font-family":"Pretendard","font-size":"12","font-weight":"700",fill:"#E7EEF6","text-anchor":"middle"},t));
+  if(sub)s.appendChild(el("text",{x:x+w/2,y:y+h/2+14,"font-family":"JetBrains Mono","font-size":"8",fill:"#7D93AC","text-anchor":"middle"},sub));
+}
+function svgTxt(s,x,y,t,col,anchor,size){
+  const n=el("text",{x,y,"font-family":"JetBrains Mono","font-size":size||"9",fill:col||"#7D93AC","text-anchor":anchor||"middle"},t);
+  s.appendChild(n); return n;
+}
+function svgLink(s,x1,y1,x2,y2,o){
+  o=o||{};
+  const ln=el("line",{x1,y1,x2,y2,stroke:o.col||"#2ED3D9","stroke-width":o.w||2,opacity:.6,"stroke-linecap":"round"});
+  if(o.dash)ln.setAttribute("stroke-dasharray",o.dash);
+  s.appendChild(ln);
+  const n=o.n||1, dur=o.dur||1.6;
+  for(let i=0;i<n;i++){
+    const d=el("circle",{r:o.r||3.5,fill:"#E7EEF6"});
+    d.appendChild(el("animateMotion",{dur:dur+"s",begin:(i*dur/n)+"s",repeatCount:"indefinite",path:"M"+x1+" "+y1+" L"+x2+" "+y2}));
+    s.appendChild(d);
   }
 }
-$$("[data-md]").forEach(b=>b.addEventListener("click",()=>{
-  $$("[data-md]").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); drawDrv(b.dataset.md);
-}));
-drawDrv("direct");
 
-/* ================= 5. 토크 ================= */
-const MOTORS=[
-  {n:"6V 200RPM 기어드",tq:4,rpm:200,v:6},
-  {n:"12V 100RPM 기어드",tq:8,rpm:100,v:12},
-  {n:"12V 300RPM 기어드",tq:2,rpm:300,v:12},
-  {n:"12V 60RPM 기어드",tq:15,rpm:60,v:12}
+/* ================= 4. 통신 방식 네 가지 ================= */
+const CMAX=["거리","속도","전력 절약","안정성"];
+const CM=[
+  {id:"ble",n:"블루투스 (BLE)",def:"가까운 기기 둘이 <b>적은 전력으로 조금씩</b> 주고받는다.",
+   bars:[8,15,95,55],vals:["약 10 m","낮음","매우 좋음","보통"],
+   router:["필요 없음",1],net:["직접 안 됨",0],peer:"스마트폰 · PC · 보드",
+   pro:["전력 소모가 매우 적다","스마트폰과 바로 연결된다"],con:["거리가 짧다","영상 · 이미지는 못 보낸다"],
+   use:"웨어러블 · 배터리 센서 · 스마트폰 앱으로 기기 설정",fact:"ESP32-S3는 BLE만 지원한다."},
+  {id:"now",n:"ESP-NOW",def:"<b>공유기 없이 ESP 보드끼리</b> 직접 주고받는다.",
+   bars:[70,40,75,55],vals:["약 100 m","중간","좋음","보통"],
+   router:["필요 없음",1],net:["직접 안 됨",0],peer:"ESP 보드끼리만",
+   pro:["공유기가 없어도 된다","켜자마자 바로 보낸다","Wi-Fi보다 멀리 간다"],con:["ESP 보드끼리만 된다","큰 데이터는 못 보낸다"],
+   use:"Wi-Fi가 없는 밭 · 온실의 센서 여러 개 · 무선 리모컨",fact:"한 번에 약 250바이트까지 보낸다."},
+  {id:"wifi",n:"Wi-Fi",def:"<b>공유기를 거쳐</b> 많은 데이터를 주고받고 <b>인터넷까지</b> 나간다.",
+   bars:[35,80,20,55],vals:["실내 수십 m","높음","나쁨","보통"],
+   router:["필요",0],net:["됨",1],peer:"거의 모든 기기",
+   pro:["빠르다 — 이미지 · 영상도 보낸다","인터넷에 바로 연결된다"],con:["전력 소모가 크다","공유기가 꺼지면 아무것도 못 한다"],
+   use:"카메라 영상 전송 · 웹 대시보드 · 클라우드 업로드",fact:"ESP32-S3는 2.4 GHz만 지원한다."},
+  {id:"eth",n:"이더넷",def:"<b>랜선으로 연결</b>하는 가장 안정적인 통신.",
+   bars:[70,100,5,100],vals:["케이블당 100 m","매우 높음","배터리 부적합","매우 높음"],
+   router:["공유기 · 스위치",1],net:["됨",1],peer:"거의 모든 기기",
+   pro:["거의 끊기지 않는다","빠르고 속도가 일정하다"],con:["선이 닿아야 한다 — 움직이는 로봇 불가","배선 작업과 비용이 든다"],
+   use:"공장 설비 · 고정 설치 카메라 · 서버",fact:"ESP32-S3에는 랜 포트가 없어 별도 모듈이 필요하다."}
 ];
-function calcTq(){
-  const w=+$("#tqW").value/10, d=+$("#tqD").value, k=+$("#tqK").value/10, n=+$("#tqN").value;
-  $("#tqWv").textContent=w.toFixed(1)+" kg"; $("#tqDv").textContent=d+" mm"; $("#tqKv").textContent=k.toFixed(1); $("#tqNv").textContent=n;
-  const need=(w*(d/20)*k)/n*1.5;
-  $("#tqOut").textContent=need.toFixed(1);
-  $("#tqMotors").innerHTML=MOTORS.map(M=>{
-    const ok=M.tq>=need, spd=(M.rpm*Math.PI*d/1000/60).toFixed(2);
-    return '<div class="card tight" style="border-color:'+(ok?"rgba(75,217,138,.5)":"rgba(255,95,86,.35)")+'"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:14px">'+M.n+'</b><span class="tag '+(ok?"ok":"bad")+'">'+(ok?"적합":"토크 부족")+'</span></div><div class="note" style="margin-top:8px">토크 <b class="mono">'+M.tq+' kg·cm</b> · 예상 속도 <b class="mono">'+spd+' m/s</b></div></div>';
-  }).join("");
-}
-["tqW","tqD","tqK","tqN"].forEach(id=>$("#"+id).addEventListener("input",calcTq));
-calcTq();
-
-/* ================= 5. 액추에이터 트리 ================= */
-const ACT=[
-  {q:"계속 회전해야 하는가?",yes:{n:"DC 모터 / 기어드 DC 모터",d:"속도는 PWM으로, 방향은 2핀으로. 위치 제어는 안 된다. 바퀴·팬에 쓴다.",need:"모터 드라이버 필요"},
-   next:1},
-  {q:"정해진 각도로 움직이는가?",yes:{n:"서보 모터",d:"PWM 신호 하나로 0–180° 각도를 지정한다. 카메라 팬틸트·밸브 개폐에 쓴다.",need:"전원은 별도 5V 라인 권장"},
-   no:{n:"릴레이 / MOSFET",d:"켜고 끄기만 한다. 큰 전원을 작은 신호로 스위칭한다. 펌프·조명·220V 기기에 쓴다.",need:"제어 신호와 구동 전력 분리"}}
-];
-(function buildAct(){
-  const box=$("#actTree");
-  box.innerHTML='<div class="chips" id="actQ1"></div><div class="chips" id="actQ2" style="margin-top:12px;display:none"></div>';
-  const q1=$("#actQ1");
-  const l=document.createElement("span"); l.className="sub"; l.style.width="100%"; l.textContent="Q1. 계속 회전해야 하는가?"; q1.appendChild(l);
-  [["예","yes"],["아니오","no"]].forEach(([t,v])=>{
-    const b=document.createElement("button"); b.className="chip"; b.type="button"; b.textContent=t;
-    b.addEventListener("click",()=>{
-      $$("#actQ1 .chip").forEach(c=>c.classList.remove("sel")); b.classList.add("sel");
-      if(v==="yes"){$("#actQ2").style.display="none"; show(ACT[0].yes);}
-      else{
-        const q2=$("#actQ2"); q2.style.display="flex"; q2.innerHTML="";
-        const l2=document.createElement("span"); l2.className="sub"; l2.style.width="100%"; l2.textContent="Q2. 정해진 각도로 움직여야 하는가?"; q2.appendChild(l2);
-        [["예","yes"],["아니오 · 켜고 끄기만","no"]].forEach(([t2,v2])=>{
-          const b2=document.createElement("button"); b2.className="chip"; b2.type="button"; b2.textContent=t2;
-          b2.addEventListener("click",()=>{$$("#actQ2 .chip").forEach(c=>c.classList.remove("sel"));b2.classList.add("sel");show(v2==="yes"?ACT[1].yes:ACT[1].no);});
-          q2.appendChild(b2);
-        });
-        $("#actMsg").className="msg"; $("#actMsg").textContent="두 번째 질문에 답하세요.";
-      }
-    });
-    q1.appendChild(b);
-  });
-  function show(A){
-    const m=$("#actMsg"); m.className="msg ok";
-    m.innerHTML="<b>→ "+A.n+"</b><br>"+A.d+'<div style="margin-top:8px"><span class="tag mech">'+A.need+'</span></div>';
+const CMSC={
+  ble(s){
+    svgBox(s,30,75,110,54,"보드","BLE"); svgBox(s,280,75,110,54,"스마트폰","앱");
+    svgLink(s,140,102,280,102,{dash:"3 5",dur:2.8,r:3});
+    svgTxt(s,210,56,"① 찾기 → ② 연결 → ③ 주고받기","#2ED3D9");
+    svgTxt(s,210,126,"약 10 m"); svgTxt(s,210,180,"적은 전력으로 조금씩");
+  },
+  now(s){
+    [22,78,134].forEach((y,i)=>{svgBox(s,24,y,100,44,"ESP32","센서 "+(i+1)); svgLink(s,124,y+22,290,100,{dur:1,r:3,dash:"3 5"});});
+    svgBox(s,290,73,110,54,"ESP32","받는 보드");
+    svgTxt(s,345,152,"공유기 없음"); svgTxt(s,345,168,"MAC 주소로 바로","#2ED3D9");
+  },
+  wifi(s){
+    svgBox(s,16,28,96,46,"ESP32","2.4 GHz"); svgBox(s,16,122,96,46,"Raspberry Pi");
+    svgBox(s,162,71,96,54,"공유기","IP 주소 배정","#F0A31E"); svgBox(s,308,71,96,54,"인터넷","클라우드");
+    svgLink(s,112,51,162,90,{dur:1.3,r:5,dash:"3 5"}); svgLink(s,112,145,162,106,{dur:1.3,r:5,dash:"3 5"});
+    svgLink(s,258,98,308,98,{dur:1,r:5});
+    svgTxt(s,210,190,"모든 기기가 공유기를 거친다");
+  },
+  eth(s){
+    svgBox(s,16,73,96,54,"Raspberry Pi","랜 포트"); svgBox(s,162,73,96,54,"스위치"); svgBox(s,308,73,96,54,"서버");
+    svgLink(s,112,100,162,100,{w:5,col:"#4BD98A",dur:.8,r:3,n:2}); svgLink(s,258,100,308,100,{w:5,col:"#4BD98A",dur:.8,r:3,n:2});
+    svgTxt(s,210,56,"랜선 · 케이블 1개당 100 m","#4BD98A"); svgTxt(s,210,160,"거의 끊기지 않는다");
   }
+};
+$("#cmBars").innerHTML=CMAX.map(a=>'<div style="margin-bottom:14px"><div class="rowlab"><span>'+a+'</span><b></b></div><div class="bar"><i style="width:0"></i></div></div>').join("");
+function showCM(i){
+  const M=CM[i];
+  $$("#cmTabs .chip").forEach((c,k)=>c.classList.toggle("sel",k===i));
+  const s=$("#cmScene"); s.innerHTML=""; CMSC[M.id](s);
+  $("#cmDef").innerHTML=M.def;
+  $$("#cmBars .rowlab b").forEach((b,k)=>b.textContent=M.vals[k]);
+  $$("#cmBars .bar i").forEach((b,k)=>b.style.width=M.bars[k]+"%");
+  const fact=(lb,v,good)=>'<div class="stat"><div class="lb">'+lb+'</div><b style="font-size:13px;color:'+(good==null?"var(--paper)":(good?"var(--ok)":"var(--bad)"))+'">'+v+'</b></div>';
+  $("#cmFacts").innerHTML=fact("공유기",M.router[0],M.router[1])+fact("인터넷",M.net[0],M.net[1])+fact("대화 상대",M.peer,null);
+  $("#cmPro").innerHTML=M.pro.map(t=>"<li>"+t+"</li>").join("");
+  $("#cmCon").innerHTML=M.con.map(t=>"<li>"+t+"</li>").join("");
+  $("#cmUse").innerHTML="<b>쓰는 곳</b> · "+M.use+'<br><span class="sub">'+M.fact+"</span>";
+}
+CM.forEach((M,i)=>{
+  const b=document.createElement("button"); b.className="chip"; b.type="button"; b.textContent=M.n;
+  b.addEventListener("click",()=>showCM(i)); $("#cmTabs").appendChild(b);
+});
+showCM(0);
+
+/* ================= 4. 조건 시뮬레이터 ================= */
+const CQ={d:5,data:0,peer:"esp",router:true,mobile:false,batt:false};
+const CQMAX=150;
+const CQM=[
+  {n:"블루투스 (BLE)",max:10,test(q){const b=[],w=[];
+    if(q.d>10)b.push("10 m를 넘는다"); if(q.data>0)b.push("사진 · 영상은 못 보낸다"); return [b,w];}},
+  {n:"ESP-NOW",max:100,test(q){const b=[],w=[];
+    if(q.d>100)b.push("100 m를 넘는다"); if(q.data>0)b.push("큰 데이터는 못 보낸다"); if(q.peer!=="esp")b.push("ESP 보드끼리만 된다"); return [b,w];}},
+  {n:"Wi-Fi",max:50,test(q){const b=[],w=[];
+    if(!q.router)b.push("공유기가 없다"); if(q.d>50)b.push("전파가 닿지 않는다"); if(q.batt)w.push("전력 소모가 크다"); return [b,w];}},
+  {n:"이더넷",max:100,test(q){const b=[],w=[];
+    if(q.mobile)b.push("선을 끌고 다닐 수 없다"); if(q.d>100)b.push("케이블 1개로 100 m까지"); if(q.peer==="phone")b.push("스마트폰에는 랜 포트가 없다");
+    if(q.peer==="esp")w.push("ESP32는 별도 모듈 필요"); if(q.batt&&!q.mobile)w.push("배터리 기기에는 부적합"); return [b,w];}}
+];
+function chipGroup(box,items,get,set){
+  items.forEach(([t,v])=>{
+    const b=document.createElement("button"); b.className="chip"+(get()===v?" sel":""); b.type="button"; b.textContent=t;
+    b.addEventListener("click",()=>{set(v); $$(".chip",box).forEach(c=>c.classList.remove("sel")); b.classList.add("sel"); calcCQ();});
+    box.appendChild(b);
+  });
+}
+chipGroup($("#cqData"),[["센서 값 · 명령",0],["사진",1],["영상",2]],()=>CQ.data,v=>CQ.data=v);
+chipGroup($("#cqPeer"),[["ESP 보드","esp"],["스마트폰","phone"],["PC · Raspberry Pi","pc"]],()=>CQ.peer,v=>CQ.peer=v);
+[["router","주변에 공유기가 있다"],["mobile","움직이는 기기다"],["batt","배터리로 오래 버텨야 한다"]].forEach(([k,t])=>{
+  const b=document.createElement("button"); b.className="sw"+(CQ[k]?" on":""); b.type="button";
+  b.innerHTML='<span class="box"></span><span class="t">'+t+'</span>';
+  b.addEventListener("click",()=>{CQ[k]=!CQ[k]; b.classList.toggle("on",CQ[k]); calcCQ();});
+  $("#cqSw").appendChild(b);
+});
+function calcCQ(){
+  CQ.d=+$("#cqDist").value; $("#cqDistV").textContent=CQ.d+" m";
+  const good=[];
+  $("#cqLanes").innerHTML=CQM.map(M=>{
+    const [b,w]=M.test(CQ), st=b.length?"bad":(w.length?"warn":"ok");
+    if(st!=="bad")good.push(M.n);
+    const reach=Math.min(100,M.max/CQMAX*100), pos=CQ.d/CQMAX*100, beam=st==="bad"?Math.min(pos,reach):pos;
+    const tag=st==="ok"?'<span class="tag ok">연결</span>':(st==="warn"?'<span class="tag pow">조건부</span>':'<span class="tag bad">불가</span>');
+    const why=b.concat(w).join(" · ");
+    return '<div class="lane"><div class="hd"><b>'+M.n+'</b>'+tag+'</div><div class="track"><div class="reach" style="width:'+reach+'%"></div><div class="beam '+st+'" style="width:'+beam+'%"></div><div class="rx" style="left:'+pos+'%"></div></div>'+(why?'<div class="note" style="margin-top:5px">'+why+'</div>':"")+'</div>';
+  }).join("");
+  const m=$("#cqMsg");
+  if(good.length){m.className="msg ok";m.innerHTML="<b>지금 조건에서 쓸 수 있는 방식 · "+good.join(", ")+"</b>";}
+  else{m.className="msg bad";m.innerHTML="<b>한 가지 방식으로는 안 된다.</b> 구간을 나누어 방식을 섞어 쓴다.";}
+}
+$("#cqDist").addEventListener("input",calcCQ);
+calcCQ();
+
+/* ================= 4. 상황 퀴즈 ================= */
+const CSOPT=["블루투스 (BLE)","ESP-NOW","Wi-Fi","이더넷"];
+const CSQ=[
+  {s:"공장 천장에 고정된 검사 카메라. 영상이 끊기면 안 된다.",a:3,q:"움직이지 않고 선을 깔 수 있는가? → 예",e:"끊기면 안 되고 움직이지 않는다면 선이 가장 확실하다."},
+  {s:"주행 로봇이 찍은 사진을 웹 대시보드로 보낸다.",a:2,q:"이미지를 보내거나 인터넷이 필요한가? → 예",e:"큰 데이터와 인터넷 연결, 둘 다 되는 무선은 Wi-Fi뿐이다."},
+  {s:"공유기가 닿지 않는 밭에 ESP32 센서 6개가 흩어져 있다.",a:1,q:"공유기 없는 곳에서 ESP 보드끼리 주고받는가? → 예",e:"공유기 없이, 멀리, 적은 전력으로 센서 값을 모은다."},
+  {s:"동전 배터리로 1년을 버티는 손목 밴드를 스마트폰 앱으로 본다.",a:0,q:"스마트폰과 연결하거나 배터리로 오래 버텨야 하는가? → 예",e:"스마트폰과 바로 연결되고 전력을 가장 적게 쓴다."}
+];
+let csI=0,csScore=0,csLocked=false;
+CSOPT.forEach((t,i)=>{
+  const b=document.createElement("button"); b.className="chip"; b.type="button"; b.textContent=t; b.dataset.i=i;
+  b.addEventListener("click",()=>{
+    if(csLocked)return; csLocked=true;
+    const Q=CSQ[csI], ok=i===Q.a;
+    $$("#csOpts .chip").forEach(c=>{if(+c.dataset.i===Q.a)c.classList.add("right");});
+    if(!ok)b.classList.add("wrong"); else csScore++;
+    $("#csScore").textContent=csScore;
+    const m=$("#csMsg"); m.className="msg "+(ok?"ok":"bad");
+    m.innerHTML="<b>"+CSOPT[Q.a]+"</b> — "+Q.q+"<br>"+Q.e;
+  });
+  $("#csOpts").appendChild(b);
+});
+function csShow(){
+  csLocked=false;
+  $("#csIdx").textContent=csI+1; $("#csSit").textContent=CSQ[csI].s;
+  $$("#csOpts .chip").forEach(c=>c.className="chip");
+  $("#csMsg").className="msg"; $("#csMsg").textContent="방식을 선택하세요.";
+  $("#csNext").textContent=csI===CSQ.length-1?"처음부터 다시":"다음 상황";
+}
+$("#csNext").addEventListener("click",()=>{
+  if(csI===CSQ.length-1){csI=0;csScore=0;$("#csScore").textContent=0;}else csI++;
+  csShow();
+});
+csShow();
+
+/* ================= 5. 판단이 동작이 되기까지 ================= */
+const LPST=[
+  {k:"감지",who:"센서",t:"거리 센서 — 앞까지 12 cm",bub:"12 cm"},
+  {k:"판단",who:"SBC · AI",t:"“앞에 벽이 있다”",x:"이 정보만으로는 아무것도 움직이지 않는다.",bub:"앞에 벽이 있다"},
+  {k:"명령",who:"SBC → MCU",t:"“멈추고 오른쪽으로 돈다”",x:"정보를 명령으로 바꾸는 것이 동작 구현의 핵심이다.",bub:"멈추고 오른쪽으로 돈다"},
+  {k:"신호",who:"MCU",t:"방향 핀과 PWM 값을 바꾼다",bub:"멈추고 오른쪽으로 돈다"},
+  {k:"구동",who:"모터 드라이버",t:"모터에 흐르는 전류의 방향과 크기를 바꾼다",bub:"멈추고 오른쪽으로 돈다"},
+  {k:"동작",who:"모터",t:"바퀴가 돌아 방향이 바뀐다",x:"바뀐 결과는 다시 감지된다. 동작은 고리로 돈다.",bub:""}
+];
+const LP={s:-1,x:80,a:0,tx:80,ta:0};
+(function buildLP(){
+  const s=$("#lpSvg");
+  s.innerHTML='<defs><marker id="lpArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7D93AC"/></marker></defs>';
+  s.appendChild(el("rect",{x:662,y:14,width:10,height:100,fill:"#22344A"}));
+  svgTxt(s,667,128,"벽");
+  s.appendChild(el("line",{x1:20,y1:114,x2:662,y2:114,stroke:"#1A2836","stroke-width":1}));
+  s.appendChild(el("line",{id:"lpBeam",x1:0,y1:68,x2:662,y2:68,stroke:"#2ED3D9","stroke-width":1.5,"stroke-dasharray":"4 4",opacity:0}));
+  const g=el("g",{id:"lpBot"});
+  g.appendChild(el("rect",{x:-9,y:-27,width:18,height:6,rx:2,fill:"#7D93AC"}));
+  g.appendChild(el("rect",{x:-9,y:21,width:18,height:6,rx:2,fill:"#7D93AC"}));
+  g.appendChild(el("circle",{r:22,fill:"#16222F",stroke:"#B18CFF","stroke-width":2}));
+  g.appendChild(el("path",{d:"M21 0 L9 -7 L9 7 Z",fill:"#2ED3D9"}));
+  s.appendChild(g);
+  s.appendChild(el("text",{id:"lpBub",x:80,y:28,"font-family":"Pretendard","font-size":"13","font-weight":"700",fill:"#E7EEF6","text-anchor":"middle"},""));
+  LPST.forEach((S,i)=>{
+    const x=15+i*114;
+    const r=el("rect",{x,y:146,width:100,height:44,rx:5,fill:"#16222F",stroke:"#22344A","stroke-width":1.5}); r.setAttribute("class","lpBox"); s.appendChild(r);
+    s.appendChild(el("text",{x:x+50,y:165,"font-family":"Pretendard","font-size":"13","font-weight":"700",fill:"#E7EEF6","text-anchor":"middle"},S.k));
+    svgTxt(s,x+50,180,S.who,null,null,"8");
+    if(i<LPST.length-1)s.appendChild(el("line",{x1:x+101,y1:168,x2:x+112,y2:168,stroke:"#7D93AC","stroke-width":1.5,"marker-end":"url(#lpArr)"}));
+  });
+  s.appendChild(el("path",{d:"M635 191 V210 H65 V194",fill:"none",stroke:"#7D93AC","stroke-width":1.5,"stroke-dasharray":"5 4","marker-end":"url(#lpArr)"}));
+  svgTxt(s,350,228,"바뀐 결과를 다시 감지한다");
 })();
+function lpShow(){
+  $$("#lpSvg .lpBox").forEach((r,i)=>{
+    r.setAttribute("stroke",i===LP.s?"#2ED3D9":(i<LP.s?"#4BD98A":"#22344A"));
+    r.setAttribute("fill",i===LP.s?"#0E2C33":"#16222F");
+  });
+  $("#lpBeam").setAttribute("opacity",LP.s>=0&&LP.s<5?.8:0);
+  const m=$("#lpMsg");
+  if(LP.s<0){$("#lpBub").textContent=""; m.className="msg"; m.innerHTML="로봇 청소기가 벽을 향해 갑니다. <b>‘다음 단계’</b>를 눌러 따라가세요.";}
+  else{
+    const S=LPST[LP.s]; $("#lpBub").textContent=S.bub;
+    m.className="msg ok"; m.innerHTML='<span class="tag mech">'+S.who+'</span> <b style="margin-left:6px">'+S.k+'</b> · '+S.t+(S.x?'<br><span class="sub">'+S.x+'</span>':"");
+  }
+  $("#lpNext").textContent=LP.s===5?"↻ 다시 감지":"▶ 다음 단계";
+}
+$("#lpNext").addEventListener("click",()=>{
+  if(LP.s<0||LP.s===5){LP.s=0; LP.x=80; LP.a=0; LP.tx=600; LP.ta=0;}
+  else{LP.s++; if(LP.s===5)LP.ta=90;}
+  lpShow();
+});
+$("#lpReset").addEventListener("click",()=>{LP.s=-1; LP.x=LP.tx=80; LP.a=LP.ta=0; lpShow();});
+onFrame(5,dt=>{
+  const k=Math.min(1,dt*4);
+  LP.x+=(LP.tx-LP.x)*k; LP.a+=(LP.ta-LP.a)*k;
+  $("#lpBot").setAttribute("transform","translate("+LP.x.toFixed(1)+" 68) rotate("+LP.a.toFixed(1)+")");
+  $("#lpBeam").setAttribute("x1",(LP.x+22).toFixed(1));
+  $("#lpBub").setAttribute("x",Math.max(110,Math.min(560,LP.x)).toFixed(1));
+});
+lpShow();
+
+/* ================= 5. 출력의 종류 ================= */
+const OUTS=[
+  {n:"위치 · 움직임",parts:"DC 모터 · 서보 모터",use:"주행 · 카메라 방향 · 팔 관절",
+   svg:'<g><animateTransform attributeName="transform" type="rotate" from="0 90 85" to="360 90 85" dur="2s" repeatCount="indefinite"/><circle cx="90" cy="85" r="42" fill="#16222F" stroke="#B18CFF" stroke-width="3"/><path d="M90 43V127M48 85H132M60 55L120 115M120 55L60 115" stroke="#B18CFF" stroke-width="2"/></g><circle cx="90" cy="85" r="7" fill="#B18CFF"/><rect x="190" y="95" width="64" height="38" rx="4" fill="#16222F" stroke="#B18CFF" stroke-width="2"/><g><animateTransform attributeName="transform" type="rotate" values="-60 222 95;60 222 95;-60 222 95" dur="3s" repeatCount="indefinite"/><line x1="222" y1="95" x2="222" y2="42" stroke="#2ED3D9" stroke-width="6" stroke-linecap="round"/></g><circle cx="222" cy="95" r="6" fill="#2ED3D9"/><text x="90" y="160" font-family="JetBrains Mono" font-size="9" fill="#7D93AC" text-anchor="middle">계속 회전</text><text x="222" y="160" font-family="JetBrains Mono" font-size="9" fill="#7D93AC" text-anchor="middle">정해진 각도</text>'},
+  {n:"잡기 · 밀기",parts:"그리퍼 · 솔레노이드",use:"물건 집기 · 잠금 장치",
+   svg:'<rect x="135" y="70" width="30" height="30" rx="3" fill="#F0A31E"/><rect y="55" width="30" height="60" rx="3" fill="#16222F" stroke="#B18CFF" stroke-width="2.5"><animate attributeName="x" values="60;105;105;60" keyTimes="0;.4;.7;1" dur="2.6s" repeatCount="indefinite"/></rect><rect y="55" width="30" height="60" rx="3" fill="#16222F" stroke="#B18CFF" stroke-width="2.5"><animate attributeName="x" values="210;165;165;210" keyTimes="0;.4;.7;1" dur="2.6s" repeatCount="indefinite"/></rect><text x="150" y="150" font-family="JetBrains Mono" font-size="9" fill="#7D93AC" text-anchor="middle">양쪽에서 조여 잡는다</text>'},
+  {n:"액체 · 공기의 흐름",parts:"펌프 · 밸브 · 팬",use:"물 공급 · 환기",
+   svg:'<rect x="40" y="30" width="90" height="46" rx="5" fill="#16222F" stroke="#2ED3D9" stroke-width="2"/><text x="85" y="58" font-family="Pretendard" font-size="12" font-weight="700" fill="#E7EEF6" text-anchor="middle">펌프</text><path d="M130 53H210V78" fill="none" stroke="#2ED3D9" stroke-width="6" stroke-linecap="round"/>'+[0,.4,.8].map(b=>'<circle cx="210" r="5" fill="#2ED3D9"><animate attributeName="cy" from="84" to="146" dur="1.2s" begin="'+b+'s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;1;0" dur="1.2s" begin="'+b+'s" repeatCount="indefinite"/></circle>').join("")+'<path d="M170 150H250" stroke="#22344A" stroke-width="3"/>'},
+  {n:"빛",parts:"LED · 조명",use:"상태 표시 · 실내 조명",
+   svg:'<g><animate attributeName="opacity" values=".15;1;.15" dur="1.8s" repeatCount="indefinite"/><circle cx="150" cy="80" r="30" fill="#F0A31E"/><path d="M150 28V14M150 146V132M98 80H84M216 80H202M113 43L103 33M187 43L197 33M113 117L103 127M187 117L197 127" stroke="#F0A31E" stroke-width="4" stroke-linecap="round"/></g><circle cx="150" cy="80" r="30" fill="none" stroke="#F0A31E" stroke-width="2"/>'},
+  {n:"소리",parts:"부저 · 스피커",use:"경고음 · 음성 안내",
+   svg:'<path d="M70 68H98L128 44V126L98 102H70Z" fill="#16222F" stroke="#2ED3D9" stroke-width="2.5" stroke-linejoin="round"/>'+[[146,20,0],[166,34,.25],[186,48,.5]].map(a=>'<path d="M'+a[0]+' '+(85-a[1])+' Q'+(a[0]+a[1]*.8)+' 85 '+a[0]+' '+(85+a[1])+'" fill="none" stroke="#2ED3D9" stroke-width="4" stroke-linecap="round"><animate attributeName="opacity" values="0;1;0" dur="1.2s" begin="'+a[2]+'s" repeatCount="indefinite"/></path>').join("")},
+  {n:"온도",parts:"히터",use:"실내 온도 유지",
+   svg:'<path d="M70 120H90L100 104L120 136L140 104L160 136L180 104L200 136L210 120H230" fill="none" stroke="#FF5F56" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'+[[100,0],[150,.5],[200,1]].map(a=>'<path d="M'+a[0]+' 90Q'+(a[0]-10)+' 78 '+a[0]+' 66T'+a[0]+' 42" fill="none" stroke="#FF5F56" stroke-width="3" stroke-linecap="round"><animate attributeName="opacity" values="0;.9;0" dur="1.8s" begin="'+a[1]+'s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 10;0 -12" dur="1.8s" begin="'+a[1]+'s" repeatCount="indefinite"/></path>').join("")}
+];
+function showOut(i){
+  $$("#outTabs .chip").forEach((c,k)=>c.classList.toggle("sel",k===i));
+  $("#outSvg").innerHTML=OUTS[i].svg; $("#outParts").textContent=OUTS[i].parts; $("#outUse").textContent=OUTS[i].use;
+}
+OUTS.forEach((O,i)=>{
+  const b=document.createElement("button"); b.className="chip"; b.type="button"; b.textContent=O.n;
+  b.addEventListener("click",()=>showOut(i)); $("#outTabs").appendChild(b);
+});
+showOut(0);
+
+/* ================= 5. 차동 구동 ================= */
+const DD={x:280,y:160,th:0,L:60,R:60,trail:[]};
+function ddLabel(){
+  const L=DD.L,R=DD.R; let t;
+  if(L===0&&R===0)t="정지";
+  else if(L===R)t=L>0?"직진":"후진";
+  else if(L===-R)t="제자리에서 "+(R>L?"왼쪽":"오른쪽")+"으로 돈다";
+  else t=(R>L?"왼쪽":"오른쪽")+"으로 휘어 간다";
+  $("#ddOut").textContent=t; $("#ddLv").textContent=L; $("#ddRv").textContent=R;
+}
+function ddSet(L,R){DD.L=L;DD.R=R;$("#ddL").value=L;$("#ddR").value=R;ddLabel();}
+$("#ddL").addEventListener("input",e=>{DD.L=+e.target.value;ddLabel();});
+$("#ddR").addEventListener("input",e=>{DD.R=+e.target.value;ddLabel();});
+[["직진",60,60],["왼쪽으로 휘기",30,80],["제자리 회전",-60,60],["후진",-50,-50],["정지",0,0]].forEach(([t,L,R])=>{
+  const b=document.createElement("button"); b.className="chip"; b.type="button"; b.textContent=t;
+  b.addEventListener("click",()=>ddSet(L,R)); $("#ddPre").appendChild(b);
+});
+ddLabel();
+onFrame(5,dt=>{
+  const c=$("#ddCanvas"), g=c.getContext("2d"), W=c.width, H=c.height;
+  const v=(DD.L+DD.R)/2*0.9, w=(DD.R-DD.L)/100*1.6;
+  DD.th-=w*dt; DD.x+=Math.cos(DD.th)*v*dt; DD.y+=Math.sin(DD.th)*v*dt;
+  let wrap=false;
+  if(DD.x<-26){DD.x=W+26;wrap=true;} if(DD.x>W+26){DD.x=-26;wrap=true;}
+  if(DD.y<-26){DD.y=H+26;wrap=true;} if(DD.y>H+26){DD.y=-26;wrap=true;}
+  if(wrap)DD.trail.push(null);
+  if(v!==0||w!==0)DD.trail.push([DD.x,DD.y]);
+  if(DD.trail.length>700)DD.trail.shift();
+  g.clearRect(0,0,W,H);
+  g.strokeStyle="rgba(46,211,217,.55)"; g.lineWidth=2; g.beginPath();
+  let pen=false;
+  DD.trail.forEach(p=>{ if(!p){pen=false;return;} if(pen)g.lineTo(p[0],p[1]); else{g.moveTo(p[0],p[1]);pen=true;} });
+  g.stroke();
+  g.save(); g.translate(DD.x,DD.y); g.rotate(DD.th);
+  const wheel=(y,s)=>{g.fillStyle=s>0?"#4BD98A":(s<0?"#FF5F56":"#7D93AC"); g.fillRect(-11,y-4,22,8);};
+  wheel(-27,DD.L); wheel(27,DD.R);
+  g.fillStyle="#16222F"; g.strokeStyle="#B18CFF"; g.lineWidth=2; g.beginPath(); g.arc(0,0,22,0,Math.PI*2); g.fill(); g.stroke();
+  g.fillStyle="#2ED3D9"; g.beginPath(); g.moveTo(21,0); g.lineTo(9,-7); g.lineTo(9,7); g.closePath(); g.fill();
+  g.restore();
+  g.font="11px JetBrains Mono, monospace"; g.fillStyle="#7D93AC";
+  g.fillText("초록 = 앞으로 · 빨강 = 뒤로",12,H-12);
+});
+
+/* ================= 5. 피드백 ================= */
+const FB={run:false,t:0,f:1,drift:0,hist:[]};
+(function(){
+  const s=$("#fbSvg");
+  [[62,"오픈 루프 · 눈 감고 걷기"],[142,"피드백 · 눈 뜨고 걷기"]].forEach(([y,t])=>{
+    s.appendChild(el("line",{x1:40,y1:y+26,x2:680,y2:y+26,stroke:"#1A2836","stroke-width":1}));
+    svgTxt(s,44,y-26,t,"#C3D2E2","start","10");
+  });
+  s.appendChild(el("line",{x1:60,y1:24,x2:60,y2:178,stroke:"#22344A","stroke-width":1.5}));
+  s.appendChild(el("line",{x1:560,y1:24,x2:560,y2:178,stroke:"#4BD98A","stroke-width":1.5,"stroke-dasharray":"5 4"}));
+  svgTxt(s,560,194,"목표 100 cm","#4BD98A"); svgTxt(s,60,194,"출발");
+  s.appendChild(el("circle",{id:"fbO",cx:60,cy:62,r:14,fill:"#16222F",stroke:"#F0A31E","stroke-width":2.5}));
+  s.appendChild(el("circle",{id:"fbF",cx:60,cy:142,r:14,fill:"#16222F",stroke:"#2ED3D9","stroke-width":2.5}));
+  s.appendChild(el("text",{id:"fbRo",x:676,y:36,"font-family":"JetBrains Mono","font-size":"10",fill:"#F0A31E","text-anchor":"end"},""));
+  s.appendChild(el("text",{id:"fbRf",x:676,y:116,"font-family":"JetBrains Mono","font-size":"10",fill:"#2ED3D9","text-anchor":"end"},""));
+})();
+$("#fbGo").addEventListener("click",()=>{
+  if(FB.run)return;
+  let f; do{f=0.65+Math.random()*0.55;}while(Math.abs(f-1)<.06);
+  FB.f=f; FB.drift=(Math.random()<.5?-1:1)*(8+Math.random()*14); FB.t=0; FB.run=true;
+  $("#fbRo").textContent=""; $("#fbRf").textContent="";
+  $("#fbCond").textContent="이번 조건 · 실제 속도 ×"+f.toFixed(2);
+  $("#fbGo").disabled=true;
+});
+onFrame(5,dt=>{
+  if(!FB.run)return;
+  FB.t+=dt; const T=2.4, D=500;
+  const p=Math.min(1,FB.t/T), xo=60+D*FB.f*p, xf=Math.min(560,60+D*FB.f*FB.t/T);
+  $("#fbO").setAttribute("cx",xo.toFixed(1)); $("#fbO").setAttribute("cy",(62+FB.drift*p).toFixed(1));
+  $("#fbF").setAttribute("cx",xf.toFixed(1)); $("#fbF").setAttribute("cy",(142+(xf<560?Math.sin(FB.t*9)*2.5:0)).toFixed(1));
+  if(p>=1&&xf>=560){
+    FB.run=false; $("#fbGo").disabled=false; $("#fbGo").textContent="▶ 다시 출발";
+    const err=Math.round((xo-560)/5);
+    FB.hist.push((err>0?"+":"")+err); if(FB.hist.length>6)FB.hist.shift();
+    $("#fbRo").textContent=(err>0?err+" cm 지나침":(-err)+" cm 못 미침")+" · 옆으로 밀림";
+    $("#fbRf").textContent="목표에서 정지";
+    const m=$("#fbMsg"); m.className="msg warn";
+    m.innerHTML="<b>오픈 루프 오차 기록 · "+FB.hist.join(", ")+" cm</b><br>명령만 보내면 매번 다르게 도착한다. 결과를 재서 명령을 고쳐야 목표에 선다.";
+  }
+});
+
+/* ================= 5. 상태 머신 ================= */
+const SMN={
+  clean:{t:"직진 청소",x:40,y:26,out:["바퀴 모터","흡입 팬"],end:"장애물 감지"},
+  stop:{t:"정지",x:285,y:26,out:["흡입 팬"],end:"바퀴 멈춤"},
+  turn:{t:"방향 전환",x:530,y:26,out:["바퀴 모터 · 좌우 반대로"],end:"회전 완료"},
+  home:{t:"충전대 복귀",x:285,y:150,out:["바퀴 모터"],end:"충전대 도착"},
+  charge:{t:"충전",x:40,y:150,out:[],end:"충전 완료"}
+};
+const SME=[
+  {t:"장애물 감지",from:["clean"],to:"stop"},{t:"바퀴 멈춤",from:["stop"],to:"turn"},{t:"회전 완료",from:["turn"],to:"clean"},
+  {t:"배터리 부족",from:["clean","stop","turn"],to:"home"},{t:"충전대 도착",from:["home"],to:"charge"},{t:"충전 완료",from:["charge"],to:"clean"}
+];
+let smCur="clean";
+(function(){
+  const s=$("#smSvg");
+  s.innerHTML='<defs><marker id="smArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7D93AC"/></marker></defs>';
+  const arr=d=>s.appendChild(el("path",{d,fill:"none",stroke:"#7D93AC","stroke-width":1.5,"marker-end":"url(#smArr)"}));
+  arr("M170 49 H283"); svgTxt(s,227,41,"장애물 감지");
+  arr("M415 49 H528"); svgTxt(s,472,41,"바퀴 멈춤");
+  arr("M595 72 C595 122,130 122,130 75"); svgTxt(s,362,100,"회전 완료");
+  arr("M500 173 H418"); svgTxt(s,508,169,"어느 상태에서든","#F0A31E","start"); svgTxt(s,508,183,"배터리 부족","#F0A31E","start");
+  arr("M285 173 H173"); svgTxt(s,229,165,"충전대 도착");
+  arr("M70 150 V75"); svgTxt(s,78,118,"충전 완료",null,"start");
+  Object.keys(SMN).forEach(k=>{
+    const N=SMN[k];
+    const r=el("rect",{x:N.x,y:N.y,width:130,height:46,rx:6,fill:"#16222F",stroke:"#22344A","stroke-width":1.5}); r.dataset.k=k; r.setAttribute("class","smNode"); s.appendChild(r);
+    s.appendChild(el("text",{x:N.x+65,y:N.y+28,"font-family":"Pretendard","font-size":"13","font-weight":"700",fill:"#E7EEF6","text-anchor":"middle"},N.t));
+  });
+})();
+function smShow(note){
+  const N=SMN[smCur];
+  $$("#smSvg .smNode").forEach(r=>{
+    const on=r.dataset.k===smCur;
+    r.setAttribute("stroke",on?"#2ED3D9":"#22344A"); r.setAttribute("stroke-width",on?3:1.5); r.setAttribute("fill",on?"#0E2C33":"#16222F");
+  });
+  $("#smOut").innerHTML=N.out.length?N.out.map(o=>'<span class="tag ok">'+o+'</span>').join(""):'<span class="tag">모두 꺼짐</span>';
+  $$("#smEv .chip").forEach((c,i)=>c.style.opacity=SME[i].from.includes(smCur)?"1":".4");
+  const m=$("#smMsg");
+  if(note){m.className="msg bad"; m.innerHTML=note;}
+  else{m.className="msg ok"; m.innerHTML="<b>지금 상태 · "+N.t+"</b> — 끝나는 조건: "+N.end+'<br><span class="sub">상태마다 정할 것은 두 가지. 무엇을 켜는가, 언제 끝나는가.</span>';}
+}
+SME.forEach(E=>{
+  const b=document.createElement("button"); b.className="chip"; b.type="button"; b.textContent=E.t;
+  b.addEventListener("click",()=>{
+    if(E.from.includes(smCur)){smCur=E.to; smShow();}
+    else smShow("<b>‘"+SMN[smCur].t+"’ 상태는 ‘"+E.t+"’을(를) 기다리지 않는다.</b> 상태마다 보는 조건이 다르다.");
+  });
+  $("#smEv").appendChild(b);
+});
+smShow();
+
+/* ================= 5. 안전 ================= */
+const SF=[
+  {s:"코드가 멈춰 모터가 계속 돈다",fix:"비상 정지 스위치",bad:"코드로는 멈출 수 없다. 로봇이 계속 달린다.",ok:"스위치가 모터 전원을 직접 끊는다. 코드와 상관없이 멈춘다.",on:false},
+  {s:"주행 중 통신이 끊겼다",fix:"끊기면 멈춘다",bad:"마지막 명령 ‘직진’을 계속 수행한다.",ok:"명령이 일정 시간 오지 않자 스스로 정지한다.",on:false},
+  {s:"전원을 켠 순간",fix:"꺼져 있는 것이 기본",bad:"핀 상태가 정해지기 전에 모터 · 펌프가 잠깐 돈다.",ok:"부팅 직후 모터 · 펌프는 정지 상태로 시작한다.",on:false},
+  {s:"물 호스가 샜다",fix:"물과 전기를 분리",bad:"물이 아래에 있는 보드로 떨어져 쇼트가 난다.",ok:"물을 다루는 부품이 보드보다 아래에 있어 보드는 젖지 않는다.",on:false}
+];
+function sfRender(){
+  const n=SF.filter(x=>x.on).length, m=$("#sfMsg");
+  SF.forEach((S,i)=>{
+    const r=$("#sfR"+i); r.className="msg "+(S.on?"ok":"bad"); r.innerHTML=(S.on?"<b>안전</b> · "+S.ok:"<b>사고</b> · "+S.bad);
+  });
+  m.className="msg "+(n===4?"ok":"warn");
+  m.innerHTML="<b>막은 사고 "+n+" / 4</b>"+(n===4?" — 안전은 코드가 아니라 설계에 넣는다.":"");
+}
+SF.forEach((S,i)=>{
+  const d=document.createElement("div"); d.className="card tight";
+  d.innerHTML='<span class="tag">상황</span><h3 style="margin:10px 0 12px">'+S.s+'</h3><button class="sw" type="button" style="width:100%"><span class="box"></span><span class="t">대책 · '+S.fix+'</span></button><div class="msg" id="sfR'+i+'"></div>';
+  const b=$(".sw",d);
+  b.addEventListener("click",()=>{S.on=!S.on; b.classList.toggle("on",S.on); sfRender();});
+  $("#sfList").appendChild(d);
+});
+sfRender();
 
 /* ================= 6. 디버깅 게임 ================= */
 const STEPS=["1 전원","2 공통 GND","3 배선","4 전압","5 GPIO 번호","6 장치 인식","7 통신","8 센서 데이터","9 AI 모델","10 액추에이터"];
@@ -1269,7 +1581,9 @@ const CASES=[
   {s:"모터를 돌리면 ESP32가 재부팅된다",a:0,e:"전류 용량 부족으로 인한 브라운아웃이다. 코드를 아무리 고쳐도 해결되지 않는다. 전원 분리와 용량 확보가 답이다."},
   {s:"코드는 올라가는데 모든 센서 값이 0이다",a:2,e:"먼저 6단계(장치 인식)로 살아있는지 보고, 죽어 있으면 3단계 배선으로 내려간다. SDA/SCL이나 TX/RX가 바뀐 경우가 압도적으로 많다."},
   {s:"I2C 센서 2개 중 1개만 읽힌다",a:5,e:"주소 충돌이다. I2C 스캔을 돌리면 즉시 보인다. ADDR 핀으로 주소를 바꾸거나 버스를 분리한다."},
-  {s:"MQTT 메시지가 브로커에 도착하지 않는다",a:6,e:"코드보다 먼저 IP·포트·같은 네트워크 여부·방화벽을 본다. 센서 값은 정상적으로 읽히고 있으므로 8단계 이전은 이미 통과했다."},
+  {s:"ESP32가 보낸 데이터가 Raspberry Pi에 도착하지 않는다",a:6,e:"코드보다 먼저 두 보드가 같은 공유기에 붙어 있는지, IP 주소가 맞는지 본다. ESP32-S3는 2.4GHz만 지원하므로 5GHz 공유기 이름에는 접속되지 않는다."},
+  {s:"‘전진’ 명령인데 로봇이 제자리에서 빙글 돈다",a:2,e:"한쪽 바퀴가 반대로 돌고 있다. 모터 선의 극성이나 AIN1·AIN2 배선이 한쪽만 뒤바뀐 것이다. 차동 구동에서 좌우가 반대로 돌면 제자리 회전이 된다."},
+  {s:"‘100cm 직진’ 명령인데 갈 때마다 멈추는 위치가 다르다",a:9,e:"코드도 배선도 정상이다. 명령만 보내고 결과를 재지 않는 오픈 루프의 한계다. 엔코더나 거리 센서로 결과를 재서 명령을 고쳐야 한다."},
   {s:"Pi에서 테스트할 땐 잘 맞는데 로봇에 올리면 인식률이 떨어진다",a:8,e:"모델이 아니라 입력이 달라진 것이다. 주행 진동으로 인한 블러, 조명 변화, RGB/BGR 반전을 먼저 의심한다."}
 ];
 let dbI=0,dbScore=0,dbLocked=false;
@@ -1304,9 +1618,9 @@ dbShow();
 const PBX=[
   {k:"하드웨어 명시",t:"ESP32-S3 (Arduino 프레임워크)를 사용한다.",why:"보드와 프레임워크를 안 쓰면 AI가 Arduino Uno용 코드를 줄 수도 있다."},
   {k:"핀 배선 명시",t:"[센서] DHT22=GPIO 4, 정전용량 토양수분=GPIO 5(ADC1), BH1750=I2C(SDA 8/SCL 9, 0x23)\n[구동] TB6612FNG: PWMA=15, AIN1=16, AIN2=17, STBY=21 / 모터 12V 별도, GND 공통",why:"핀 번호가 없으면 AI는 임의의 핀을 고른다. 그 핀이 스트래핑 핀이면 보드가 안 켜진다."},
-  {k:"동작 주기 · 조건",t:"2초마다 센서를 읽는다. HC-SR04(TRIG 6/ECHO 7)가 20cm 이내를 감지하면 모터를 즉시 정지한다. 모터 가속은 200ms 램프업으로 처리한다.",why:"‘램프업 200ms’ 같은 요구는 기동 전류를 아는 사람만 쓸 수 있는 문장이다."},
-  {k:"데이터 형식",t:'센서 값을 {"temp","humi","soil","lux"} JSON으로 만들어 MQTT topic "farm/robot01/sensor"에 publish 한다.',why:"형식을 정해두지 않으면 나중에 대시보드·서버 코드를 전부 다시 짜야 한다."},
-  {k:"예외 처리",t:"Wi-Fi 또는 MQTT가 끊기면 5초마다 재연결한다. 센서 하나가 실패해도 나머지는 계속 동작하고, 실패한 값만 null로 발행한다.",why:"현장에서 제품이 죽는 이유의 대부분은 기능이 아니라 예외 상황이다."},
+  {k:"동작 상태 · 조건",t:"상태는 [순찰 주행 → 정지 → 촬영 → 급수 → 순찰 주행] 순서로 넘어간다. 어느 상태에서든 HC-SR04(TRIG 6/ECHO 7)가 20cm 이내를 감지하면 모터를 즉시 정지한다. 모터 가속은 200ms 램프업으로 처리한다.",why:"상태와 끝나는 조건을 말로 줄 수 있어야 AI가 ‘행동’을 코드로 만든다. 순서를 안 주면 AI는 모든 동작을 한꺼번에 실행한다."},
+  {k:"통신 · 데이터 형식",t:'센서 값을 {"temp","humi","soil","lux"} JSON으로 만들어 2초마다 Wi-Fi(2.4GHz)로 Raspberry Pi에 보낸다.',why:"통신 방식과 형식을 정해두지 않으면 나중에 대시보드·서버 코드를 전부 다시 짜야 한다."},
+  {k:"예외 처리 · 안전",t:"Wi-Fi가 끊기면 5초마다 재연결한다. Raspberry Pi의 명령이 2초 동안 오지 않으면 모터와 펌프를 정지한다. 부팅 직후 모터와 펌프는 꺼진 상태로 시작한다.",why:"움직이는 기기에서 가장 위험한 것은 마지막 명령을 계속 수행하는 것이다. ‘끊기면 멈춘다’는 직접 요구해야 들어간다."},
   {k:"검증 방법",t:"부팅 시 I2C 스캔 결과와 각 모듈의 초기화 성공/실패를 115200bps 시리얼로 출력한다.",why:"검증 수단을 같이 요구하면 문제가 생겼을 때 어디가 잘못됐는지 즉시 보인다."}
 ];
 const pbxList=$("#pbxList");
@@ -1339,14 +1653,14 @@ const BD=[
   {id:"bat",x:20,y:170,w:120,h:56,t:"3S Li-ion 11.1V",s:"2600mAh",c:"pow",d:"평균 소비 약 23W에 순찰 주기 운용을 전제로 선택했다. 상시 주행이면 용량을 두 배로 올려야 한다."},
   {id:"b1",x:180,y:110,w:96,h:44,t:"Buck 5V / 5A",s:"5V-A",c:"pow",d:"Raspberry Pi 5는 피크에서 3A까지 먹는다. 여유율 30%를 반영해 5A 컨버터를 골랐다."},
   {id:"b2",x:180,y:240,w:96,h:44,t:"Buck 5V / 2A",s:"5V-B",c:"pow",d:"ESP32와 센서, 서보용. 서보 스톨 전류까지 합쳐 피크 1.3A → 2A면 충분하다."},
-  {id:"pi",x:330,y:70,w:130,h:66,t:"Raspberry Pi 5",s:"AI 추론 · MQTT 브로커",c:"sig",d:"영상 추론과 네트워크를 담당한다. 추론 중 수백 ms 멈춰도 안전에 영향이 없도록 제어는 맡기지 않았다."},
-  {id:"cam",x:520,y:20,w:120,h:44,t:"CSI 카메라",s:"1280×720 · 15FPS",c:"sig",d:"잎 반점이 식별되는 최소 해상도. 더 올리면 추론 지연·전력·발열만 늘어난다."},
-  {id:"esp",x:330,y:230,w:130,h:66,t:"ESP32-S3",s:"센서 · 실시간 제어",c:"sig",d:"Wi-Fi 내장, 부팅 0.3초, 소비 0.1A. 늦으면 위험한 일(안전 정지·모터 제어)을 전담한다."},
+  {id:"pi",x:330,y:70,w:130,h:66,t:"Raspberry Pi 5",s:"AI 추론 · 판단",c:"sig",d:"영상을 보고 판단해 ESP32에 명령을 보낸다. 추론 중 수백 ms 멈춰도 안전에 영향이 없도록 제어는 맡기지 않았다."},
+  {id:"cam",x:520,y:20,w:120,h:44,t:"CSI 카메라",s:"1280×720 · 15FPS",c:"sig",d:"잎 반점을 식별할 수 있는 해상도. 영상은 데이터가 커서 Pi에 케이블로 직접 연결한다."},
+  {id:"esp",x:330,y:230,w:130,h:66,t:"ESP32-S3",s:"센서 · 실시간 제어",c:"sig",d:"Pi와는 Wi-Fi로 주고받는다(Pi는 ESP-NOW를 쓰지 못한다). 늦으면 위험한 일(안전 정지·모터 제어)을 전담하고, 명령이 끊기면 스스로 멈춘다."},
   {id:"sen",x:150,y:330,w:150,h:44,t:"센서 5종",s:"GPIO · ADC1 · I2C",c:"sig",d:"토양수분은 ADC1(GPIO 1–10)에 붙였다. ADC2는 Wi-Fi를 켜면 읽히지 않는다."},
-  {id:"drv",x:520,y:200,w:120,h:44,t:"TB6612FNG",s:"모터 드라이버",c:"mech",d:"L298N보다 전압 강하가 작아 배터리 사용시간에 유리하다. 3.3V 로직과 직접 호환된다."},
-  {id:"mot",x:660,y:200,w:80,h:44,t:"DC 모터 ×2",s:"8kg·cm",c:"mech",d:"필요 토크 3.8kg·cm의 약 2배. 문턱·경사에서 멈추지 않도록 마진을 뒀다."},
-  {id:"svo",x:520,y:270,w:120,h:44,t:"서보 ×2",s:"카메라 팬틸트",c:"mech",d:"각도를 지정해야 하므로 서보. 전원은 5V-B에서 따로 받아 MCU 전압을 흔들지 않는다."},
-  {id:"pmp",x:520,y:330,w:120,h:44,t:"펌프 + 릴레이",s:"12V",c:"mech",d:"켜고 끄기만 하면 되므로 릴레이. 큰 전류는 12V 라인이 직접 감당한다."}
+  {id:"drv",x:520,y:200,w:120,h:44,t:"TB6612FNG",s:"모터 드라이버",c:"mech",d:"방향은 AIN1·AIN2, 속도는 PWMA로 지시받는다. MCU는 신호만 보내고 큰 전류는 12V 라인에서 끌어다 쓴다."},
+  {id:"mot",x:660,y:200,w:80,h:44,t:"DC 모터 ×2",s:"차동 구동",c:"mech",d:"좌우 바퀴를 따로 돌려 속도 차이로 방향을 바꾼다. 핸들이 없어도 제자리 회전이 된다."},
+  {id:"svo",x:520,y:270,w:120,h:44,t:"서보 ×2",s:"카메라 팬틸트",c:"mech",d:"각도를 지정해야 하므로 서보. 펄스 길이로 각도를 지시하고, 전원은 5V-B에서 따로 받는다."},
+  {id:"pmp",x:520,y:330,w:120,h:44,t:"펌프 + 릴레이",s:"12V",c:"mech",d:"켜고 끄기만 하면 되므로 릴레이. GPIO는 접점만 붙이고 큰 전류는 12V 라인이 직접 감당한다."}
 ];
 const BDPOW=[["bat","b1"],["bat","b2"],["b1","pi"],["b2","esp"],["bat","drv"],["b2","svo"],["bat","pmp"]];
 const BDSIG=[["cam","pi"],["pi","esp"],["sen","esp"],["esp","drv"],["esp","svo"],["esp","pmp"]];
@@ -1374,6 +1688,7 @@ function edge(a,b){
     });
     N.appendChild(g);
   });
+  svgTxt($("#bdSig"),418,186,"Wi-Fi","#2ED3D9");
   const gndY=392;
   $("#bdPow").appendChild(el("path",{d:"M30 "+gndY+" H740",stroke:"#7D93AC","stroke-width":1.4,"stroke-dasharray":"6 5",fill:"none"}));
   $("#bdPow").appendChild(el("text",{x:385,y:gndY-6,"font-family":"JetBrains Mono","font-size":"9",fill:"#7D93AC","text-anchor":"middle"},"모든 GND 공통 연결"));
